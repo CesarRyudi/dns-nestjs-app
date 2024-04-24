@@ -21,4 +21,10 @@ export class AppController {
   private(): string {
     return this.appService.private();
   }
+
+  @UseGuards(AuthGuard)
+  @Get('weweb')
+  wewebTest() {
+    return this.appService.wewebTest();
+  }
 }
