@@ -3,6 +3,7 @@ import { promisify } from 'util';
 import { expressjwt, GetVerificationKey, UnauthorizedError } from 'express-jwt';
 import { expressJwtSecret } from 'jwks-rsa';
 import { ConfigService } from '@nestjs/config';
+import jwt from 'jsonwebtoken';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -28,7 +29,14 @@ export class AuthGuard implements CanActivate {
     );
     try{
       await checkJWT(req, res);
+
+      const token = req.headers.authorization.split(' ')[1]; 
+      console.log(token);
+      // const decodedToken = jwt.decode(token);
+      // console.log(decodedToken);
+      
       return true;
+
     } catch(error){
       console.log(error);
       throw new UnauthorizedException(error);
