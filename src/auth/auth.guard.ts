@@ -1,19 +1,23 @@
-import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { promisify } from 'util';
 import { expressjwt, GetVerificationKey, UnauthorizedError } from 'express-jwt';
 import { expressJwtSecret } from 'jwks-rsa';
 import { ConfigService } from '@nestjs/config';
-import jwt from 'jsonwebtoken';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
-
-  constructor(private configService: ConfigService){}
+  constructor(private configService: ConfigService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const req = context.getArgByIndex(0);
     const res = context.getArgByIndex(1);
-    
+
     const checkJWT = promisify(
       expressjwt({
         secret: expressJwtSecret({
@@ -27,17 +31,23 @@ export class AuthGuard implements CanActivate {
         algorithms: ['RS256'],
       }),
     );
-    try{
+
+    // type PayloadType = { email: string };
+
+    // async function refreshTokenByOldToken(authHeader: string, jwtService = this.jwtService) {
+    //   const decodedJwt = jwtService.decode(
+    //     authHeader.split(' ')[1],
+    //   ) as PayloadType;
+    //   return decodedJwt.email;
+    // }
+
+    
+
+    try {
       await checkJWT(req, res);
 
-      const token = req.headers.authorization.split(' ')[1]; 
-      console.log(token);
-      // const decodedToken = jwt.decode(token);
-      // console.log(decodedToken);
-      
       return true;
-
-    } catch(error){
+    } catch (error) {
       console.log(error);
       throw new UnauthorizedException(error);
     }
