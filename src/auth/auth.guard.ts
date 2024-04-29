@@ -8,7 +8,6 @@ import { promisify } from 'util';
 import { expressjwt, GetVerificationKey, UnauthorizedError } from 'express-jwt';
 import { expressJwtSecret } from 'jwks-rsa';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
