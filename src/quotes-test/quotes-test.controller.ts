@@ -3,7 +3,9 @@ import { QuotesTestService } from './quotes-test.service';
 import { CreateQuotesTestDto } from './dto/create-quotes-test.dto';
 import { UpdateQuotesTestDto } from './dto/update-quotes-test.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('quotes-test')
 @Controller('quotes-test')
 export class QuotesTestController {
   constructor(private readonly quotesTestService: QuotesTestService) {}
@@ -19,7 +21,11 @@ export class QuotesTestController {
   }
 
   @Get(':take/:skip/:filter?')
-  findAll(@Param('take') take: string, @Param('skip') skip: string, @Param('filter') filter?: string,) {
+  findAll(
+    @Param('take') take: string,
+    @Param('skip') skip: string,
+    @Param('filter') filter?: string,
+  ) {
     return this.quotesTestService.findAll(take, skip, filter);
   }
 

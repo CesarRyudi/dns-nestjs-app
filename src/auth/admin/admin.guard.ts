@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
-export class RolesGuard implements CanActivate {
+export class AdminGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
   canActivate(
@@ -16,15 +16,18 @@ export class RolesGuard implements CanActivate {
       return false; // Se não houver token, nega o acesso
     }
 
-    try {
-      const decodedToken = this.jwtService.verify(token); // Decodifica o token JWT
+    try { 
+      const decodedToken = this.jwtService.decode(token); // Decodifica o token JWT
       const permissions: string[] = decodedToken.permissions;
 
-      // Verifica se o token contém a permissão "role:admin"
+      
+      console.log('Token: =>' + JSON.stringify(decodedToken));
+      console.log('=====>>>' + permissions.includes('role:admin'));
+
+      // // Verifica se o token contém a permissão "role:admin"
       if (permissions && permissions.includes('role:admin')) {
         return true; // Se o usuário tiver a permissão, concede o acesso
       }
-
       return false; // Se o usuário não tiver a permissão, nega o acesso
     } catch (error) {
       console.error('Erro ao verificar o token:', error);
