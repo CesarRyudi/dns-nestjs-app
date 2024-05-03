@@ -12,6 +12,11 @@ export class AppController {
     return this.appService.private();
   }
 
+  @Get()
+  asd(): string {
+    return "Hello World!";
+  }
+
   @UseGuards(AuthGuard)
   @Get('weweb')
   wewebTest() {

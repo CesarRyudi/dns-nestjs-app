@@ -14,7 +14,8 @@ export class QuotesTestController {
   create(@Body() createQuotesTestDto: CreateQuotesTestDto) {
     return this.quotesTestService.create(createQuotesTestDto);
   }
-  @Post()
+  
+  @Post('csv')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file) {
     return this.quotesTestService.uploadFile(file);
@@ -29,12 +30,12 @@ export class QuotesTestController {
     return this.quotesTestService.findAll(take, skip, filter);
   }
 
-  @Get(':id')
+  @Get('id/:id')
   findOne(@Param('id') id: string) {
     return this.quotesTestService.findOne(+id);
   }
 
-  @Patch(':id')
+  @Patch('id/:id')
   update(
     @Param('id') id: string,
     @Body() updateQuotesTestDto: UpdateQuotesTestDto,
@@ -42,7 +43,7 @@ export class QuotesTestController {
     return this.quotesTestService.update(+id, updateQuotesTestDto);
   }
 
-  @Delete(':id')
+  @Delete('id/:id')
   remove(@Param('id') id: string) {
     return this.quotesTestService.remove(+id);
   }
