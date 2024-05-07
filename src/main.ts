@@ -6,7 +6,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors();
-  app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()
     .setTitle('APIs que alimentam o App da DNS')
@@ -22,6 +22,12 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
+
+  // Defina o timeout para 5 minutos (300000 milissegundos)
+  app.use((req, res, next) => {
+    res.setTimeout(300000); // 5 minutos
+    next();
+  });
 
   await app.listen(3000);
 }

@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseInterceptors, UploadedFile } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+  Res,
+} from '@nestjs/common';
 import { QuotesTestService } from './quotes-test.service';
 import { CreateQuotesTestDto } from './dto/create-quotes-test.dto';
 import { UpdateQuotesTestDto } from './dto/update-quotes-test.dto';
@@ -14,11 +25,23 @@ export class QuotesTestController {
   create(@Body() createQuotesTestDto: CreateQuotesTestDto) {
     return this.quotesTestService.create(createQuotesTestDto);
   }
-  
+
   @Post('csv')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(@UploadedFile() file) {
     return this.quotesTestService.uploadFile(file);
+  }
+
+  @Get('export/:filter?')
+  export(@Res() res: Response, @Param('filter') filter?: string) {
+    console.log('Aqui');
+
+    return this.quotesTestService.export(res, filter);
+  }
+
+  @Get('id/:id')
+  findOne(@Param('id') id: string) {
+    return this.quotesTestService.findOne(+id);
   }
 
   @Get(':take/:skip/:filter?')
@@ -28,11 +51,6 @@ export class QuotesTestController {
     @Param('filter') filter?: string,
   ) {
     return this.quotesTestService.findAll(take, skip, filter);
-  }
-
-  @Get('id/:id')
-  findOne(@Param('id') id: string) {
-    return this.quotesTestService.findOne(+id);
   }
 
   @Patch('id/:id')
