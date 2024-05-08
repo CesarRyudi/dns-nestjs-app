@@ -59,19 +59,19 @@ export class UsersService {
       connection: 'DNS-Invite-only-test',
     };
 
-    const passwordUrl = 'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/dbconnections/change_password';
+    const passwordUrl =
+      'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/dbconnections/change_password';
 
     try {
       const response = await this.httpService
         .post(url, body, { headers })
         .toPromise();
 
-        
       const responsePassword = await this.httpService
         .post(passwordUrl, passwordBody, { headers })
         .toPromise();
 
-        console.log(responsePassword);
+      console.log(responsePassword);
 
       return response.data;
     } catch (error) {
@@ -92,25 +92,25 @@ export class UsersService {
       const url =
         'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/users?fields=email,user_id';
       const response = await this.httpService.get(url, { headers }).toPromise();
-      return response.data;
+      return { msg: 'Usuários cadastrados ', data: response.data };
     } catch (error) {
       throw new NotImplementedException({ msg: 'Erro desconhecido' });
     }
   }
 
   async remove(id: string) {
-    
     const bigToken = await this.getBigToken(this.httpService); // Recebe o token master e armazena no bigToken
     const headers = {
       Authorization: 'Bearer ' + bigToken,
       'Content-Type': 'application/json',
     };
-    
+
     try {
-      const url =
-        `https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/users/${id}`;
-      const response = await this.httpService.delete(url, { headers }).toPromise();
-      return {msg: `Usuário de id ${id} deletado com sucesso!`};
+      const url = `https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/users/${id}`;
+      const response = await this.httpService
+        .delete(url, { headers })
+        .toPromise();
+      return { msg: `Usuário de id ${id} deletado com sucesso!` };
     } catch (error) {
       throw new NotImplementedException({ msg: 'Erro desconhecido' });
     }

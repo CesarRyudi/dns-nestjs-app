@@ -91,50 +91,50 @@ model QuotesTest {
 model QuotesCSV {
   id Int @id @default(autoincrement())
 
-  NOME              String
-  Date_RFQ          String
-  Customer          String
-  BUYER             String
-  PN                String
-  DESC              String
-  QTY               String
-  UOM               String
-  PN_ALT            String
-  DESC_PN_ALT       String
-  OEM               String
-  SOURCE_1          String
-  SOURCE_2          String
-  SOURCE_3          String
-  DATE              String
-  UNIT_money        Float
-  LT                String
-  REMARKS           String
-  Concluido         String
-  ID                String
-  id_cotacao        String
-  Quote             String
-  Customer_PO       String
-  TERMS             String
-  CURRENCY          String
-  PRECO_COMPRA      String
-  Vendor            String
-  AVAILABLE         String
-  CONDITION         String
-  VEND_DELIVERY     String
-  FINAL_DESTINATION String
-  OBS               String
-  EDD_vendor        String
-  EDD_Customer      String
-  PN_Manufacturer   String
-  Status_Quantum    String
-  vendor_PO         String
-  SO                String
-  money_LUCRO       Float
-  Total_LUCRO       Float
-  Sales_Code        String
-  ABBREV            String
-  EMAIL             String
-  Cotacao_Quantum   String
+  NOME              String  // User
+  PN                String  // Obrigatorio! o User informa
+  Date_RFQ          String  // Se estiver vazio, insere o agora
+  UNIT_money        Float   // Se estiver vazio, insere 0
+  UOM               String  // Obrigatorio! (Unidade de medida) Se estiver vazio coloca EA
+  Customer          String? // User informa 
+  BUYER             String? // User informa
+  DESC              String?  
+  QTY               String? // Quantidade
+  PN_ALT            String?  
+  DESC_PN_ALT       String?  
+  OEM               String? //(Observação) 
+  SOURCE_1          String?  
+  SOURCE_2          String?  
+  SOURCE_3          String?  
+  DATE              String?  
+  LT                String? //(Lead time) 
+  REMARKS           String?  
+  Concluido         String?  
+  // ID                String?  
+  // id_cotacao        String
+  // Quote             String?  
+  Customer_PO       String?  
+  TERMS             String?  
+  CURRENCY          String?  
+  PRECO_COMPRA      String? // Mudar tudo pra ingles   
+  Vendor            String?  
+  AVAILABLE         String?
+  CONDITION         String?
+  VEND_DELIVERY     String?
+  FINAL_DESTINATION String?
+  OBS               String?
+  // EDD_vendor        String
+  // EDD_Customer      String
+  PN_Manufacturer   String?
+  Status_Quantum    String?
+  vendor_PO         String?
+  SO                String?
+  money_LUCRO       Float? // mudar pro ingles
+  Total_LUCRO       Float?
+  Sales_Code        String?
+  ABBREV            String?
+  EMAIL             String?
+  Cotacao_Quantum   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
