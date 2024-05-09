@@ -16,13 +16,50 @@ export class QuotesService {
 
   create(createQuotesDto: CreateQuotesDto) {
 
-  // try{
-  //     const response = await this.prismaService.quotesCSV.create({
-  //     data: {
-  //     },
-  //   });
-
-    return 'This action adds a new quotes';
+     return this.prismaService.quotesCSV.create({
+       data: {
+         TABLE: createQuotesDto.TABLE,
+         NOME: createQuotesDto.NOME,
+         PN: createQuotesDto.PN,
+         Date_RFQ: createQuotesDto.Date_RFQ,
+         UNIT_money: createQuotesDto.UNIT_money,
+         UOM: createQuotesDto.UOM,
+         Customer: createQuotesDto.Customer,
+         BUYER: createQuotesDto.BUYER,
+         DESC: createQuotesDto.DESC,
+         QTY: createQuotesDto.QTY,
+         PN_ALT: createQuotesDto.PN_ALT,
+         DESC_PN_ALT: createQuotesDto.DESC_PN_ALT,
+         OEM: createQuotesDto.OEM,
+         SOURCE_1: createQuotesDto.SOURCE_1,
+         SOURCE_2: createQuotesDto.SOURCE_2,
+         SOURCE_3: createQuotesDto.SOURCE_3,
+         DATE: createQuotesDto.DATE,
+         LT: createQuotesDto.LT,
+         REMARKS: createQuotesDto.REMARKS,
+         Concluido: createQuotesDto.Concluido,
+         Customer_PO: createQuotesDto.Customer_PO,
+         TERMS: createQuotesDto.TERMS,
+         CURRENCY: createQuotesDto.CURRENCY,
+         PRECO_COMPRA: createQuotesDto.PRECO_COMPRA,
+         Vendor: createQuotesDto.Vendor,
+         AVAILABLE: createQuotesDto.AVAILABLE,
+         CONDITION: createQuotesDto.CONDITION,
+         VEND_DELIVERY: createQuotesDto.VEND_DELIVERY,
+         FINAL_DESTINATION: createQuotesDto.FINAL_DESTINATION,
+         OBS: createQuotesDto.OBS,
+         PN_Manufacturer: createQuotesDto.PN_Manufacturer,
+         Status_Quantum: createQuotesDto.Status_Quantum,
+         vendor_PO: createQuotesDto.vendor_PO,
+         SO: createQuotesDto.SO,
+         money_LUCRO: createQuotesDto.money_LUCRO,
+         Total_LUCRO: createQuotesDto.Total_LUCRO,
+         Sales_Code: createQuotesDto.Sales_Code,
+         ABBREV: createQuotesDto.ABBREV,
+         EMAIL: createQuotesDto.EMAIL,
+         Cotacao_Quantum: createQuotesDto.Cotacao_Quantum,
+       },
+     });
   }
 
   async findAll(take: string, skip: string, filter?: string) {

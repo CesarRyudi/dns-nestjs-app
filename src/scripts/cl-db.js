@@ -65,7 +65,7 @@ async function main() {
           EMAIL: record.EMAIL,
           Cotacao_Quantum: record['Cotação Quantum'],
         };
-        const response = await prisma.quotesCSV.create({ data: mappedData });
+        const response = await prisma.data.create({ data: mappedData });
         console.log(i++);
       }
     });
@@ -94,7 +94,7 @@ async function limparTabela() {
 }
 
 
-
-main();
-// limparTabela();
+// 
+// main();
+limparTabela();
 // console.log(Number(extrairNumeros('6,5528430034asd1297'.replace(',', '.'))));

@@ -38,6 +38,7 @@ export class UsersService {
     const url = 'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/users';
     const body = {
       email: createUserDto.email,
+      name:createUserDto.name,
       user_metadata: {},
       blocked: false,
       email_verified: false,
@@ -90,9 +91,9 @@ export class UsersService {
 
     try {
       const url =
-        'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/users?fields=email,user_id';
+        'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/users?fields=email,user_id,name';
       const response = await this.httpService.get(url, { headers }).toPromise();
-      return { msg: 'Usuários cadastrados ', data: response.data };
+      return { msg: 'Usuários:', data: response.data };
     } catch (error) {
       throw new NotImplementedException({ msg: 'Erro desconhecido' });
     }
