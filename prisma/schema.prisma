@@ -38,9 +38,6 @@ model QuotesCSV {
   LT                String? //(Lead time) 
   REMARKS           String?
   Concluido         String?
-  // ID                String?  
-  // id_cotacao        String
-  // Quote             String?  
   Customer_PO       String?
   TERMS             String?
   CURRENCY          String?
@@ -51,8 +48,6 @@ model QuotesCSV {
   VEND_DELIVERY     String?
   FINAL_DESTINATION String?
   OBS               String?
-  // EDD_vendor        String
-  // EDD_Customer      String
   PN_Manufacturer   String?
   Status_Quantum    String?
   vendor_PO         String?
