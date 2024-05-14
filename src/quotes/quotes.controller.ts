@@ -9,6 +9,8 @@ import {
   UseInterceptors,
   UploadedFile,
   Res,
+  Query,
+  Req,
 } from '@nestjs/common';
 import { QuotesService } from './quotes.service';
 import { CreateQuotesDto } from './dto/create-quote.dto';
@@ -41,7 +43,7 @@ export class QuotesController {
   export2(@Res() res: Response, @Param('filter') filter?: string) {
     return this.quotesService.export2(res, filter);
   }
-  
+
   @Get('id/:id')
   findOne(@Param('id') id: string) {
     return this.quotesService.findOne(+id);
@@ -49,11 +51,13 @@ export class QuotesController {
 
   @Get(':take/:skip/:filter?')
   findAll(
+    @Req() req: Request,
     @Param('take') take: string,
     @Param('skip') skip: string,
     @Param('filter') filter?: string,
+    @Query('table') table?: string,
   ) {
-    return this.quotesService.findAll(take, skip, filter);
+    return this.quotesService.findAll(req, take, skip, table, filter);
   }
 
   @Patch('id/:id')

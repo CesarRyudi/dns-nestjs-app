@@ -18,7 +18,8 @@ datasource db {
 model QuotesCSV {
   id Int @id @default(autoincrement())
 
-  TABLE             Int     @default(0) // Define a que tabela pertence
+  Log_Company       String?
+  Table             String
   NOME              String // User 
   PN                String // Obrigatorio! o User informa
   Date_RFQ          String // Se estiver vazio, insere o agora
@@ -58,7 +59,10 @@ model QuotesCSV {
   ABBREV            String?
   EMAIL             String?
   Cotacao_Quantum   String?
+  Customer_PO_Receipt String? // Adicionado novo campo
+  Location          String? // Adicionado novo campo
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+

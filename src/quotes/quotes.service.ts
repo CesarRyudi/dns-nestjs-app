@@ -1,23 +1,39 @@
 import { Injectable } from '@nestjs/common';
 import { CreateQuotesDto } from './dto/create-quote.dto';
 import { UpdateQuotesDto } from './dto/update-quote.dto';
-// import { PrismaService } from 'src/prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import * as fastcsv from 'fast-csv';
 import { Readable } from 'stream';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class QuotesService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  checkCompany(req) {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (token) {
+      const decodedToken = this.jwtService.decode(token); // Decodifica o token JWT
+      const permissions: string[] = decodedToken.permissions;
+      const company = permissions.filter((perm) => perm.startsWith('company:'));
+
+      console.log("\n\n\n");
+      console.log("======>>>>");
+      console.log(company);
+      console.log('\n\n\n');
+    }
+  }
 
   uploadFile(file: any) {
     throw new Error('Method not implemented.');
   }
 
   create(createQuotesDto: CreateQuotesDto) {
-
-
     //  const response =  this.prismaService.quotesCSV.create({
     //    data: {
     //      TABLE: createQuotesDto.TABLE,
@@ -63,14 +79,21 @@ export class QuotesService {
     //    },
     //  });
 
-     return "Coulkdnt create";
-
+    return 'Coulkdnt create';
   }
 
-  async findAll(take: string, skip: string, filter?: string) {
+  async findAll(
+    req: Express.Request,
+    take: string,
+    skip: string,
+    table: string,
+    filter?: string,
+  ) {
     const takeNumber = parseInt(take);
     const skipNumber = parseInt(skip);
     const page = skipNumber * takeNumber;
+
+    this.checkCompany(req);
 
     const query: Prisma.QuotesCSVFindManyArgs = {
       skip: page,
@@ -80,32 +103,49 @@ export class QuotesService {
 
     if (filter) {
       query.where = {
-        OR: [
+        AND: [
           {
-            NOME: {
-              contains: filter,
-              mode: 'insensitive',
-            },
+            OR: [
+              {
+                NOME: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                Customer: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                PN: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                DESC: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+            ],
           },
           {
-            Customer: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            PN: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            DESC: {
-              contains: filter,
+            Table: {
+              equals: table,
               mode: 'insensitive',
             },
           },
         ],
+      };
+    } else {
+      query.where = {
+        Table: {
+          equals: table,
+          mode: 'insensitive',
+        },
       };
     }
 
@@ -115,34 +155,51 @@ export class QuotesService {
 
     if (filter) {
       countQueryArgs.where = {
-        OR: [
+        AND: [
           {
-            NOME: {
-              contains: filter,
-              mode: 'insensitive',
-            },
+            OR: [
+              {
+                NOME: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                Customer: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                PN: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                DESC: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+            ],
           },
           {
-            Customer: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            PN: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            DESC: {
-              contains: filter,
+            Table: {
+              equals: table,
               mode: 'insensitive',
             },
           },
         ],
       };
       // console.log('====> ' + countQueryArgs);
+    } else {
+      countQueryArgs.where = {
+        Table: {
+          equals: table,
+          mode: 'insensitive',
+        },
+      };
     }
 
     const countQuery = this.prismaService.quotesCSV.count(countQueryArgs);
@@ -257,4 +314,4 @@ export class QuotesService {
   remove(id: number) {
     return `This action removes a #${id} quotes`;
   }
-} 
+}

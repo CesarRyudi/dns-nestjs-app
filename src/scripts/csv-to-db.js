@@ -19,71 +19,71 @@ async function main() {
       for (const record of results) {
         // console.log("\n\nRecord: =====>>" + JSON.stringify(record) + "\n\n");
         const mappedData = {
-          TABLE: 0,
+          Log_Company: record.Log_Company,
+          Table: record['Table'],
           NOME: record['NOME'],
-          Date_RFQ: record['Date RFQ'],
+          PN: record.PN,
+          Date_RFQ: record['Date_RFQ'],
+          UNIT_money:
+            Number(extrairNumeros(record['UNIT_money'].replace(',', '.'))) || 0,
+          UOM: record.UOM,
           Customer: record.Customer,
           BUYER: record.BUYER,
-          PN: record.PN,
           DESC: record.DESC,
           QTY: record['QTY'],
-          UOM: record.UOM,
-          PN_ALT: record['PN ALT#'],
-          DESC_PN_ALT: record['DESC PN ALT'],
+          PN_ALT: record['PN_ALT'],
+          DESC_PN_ALT: record['DESC_PN_ALT'],
           OEM: record.OEM,
-          SOURCE_1: record['SOURCE 1'],
-          SOURCE_2: record['SOURCE 2'],
-          SOURCE_3: record['SOURCE 3'],
+          SOURCE_1: record['SOURCE_1'],
+          SOURCE_2: record['SOURCE_2'],
+          SOURCE_3: record['SOURCE_3'],
           DATE: record.DATE,
-          UNIT_money: Number(extrairNumeros(record['UNIT $'].replace(',', '.'))) || 0,
           LT: record.LT,
           REMARKS: record.REMARKS,
           Concluido: record.Concluido,
-          // ID: record.ID,
-          // id_cotacao: record['id cotacao'],
-          // Quote: record['Quote?'],
-          Customer_PO: record['Customer PO'],
+          Customer_PO: record['Customer_PO'],
           TERMS: record.TERMS,
           CURRENCY: record.CURRENCY,
-          PRECO_COMPRA: record['PRECO COMPRA'],
+          PRECO_COMPRA: record['PRECO_COMPRA'],
           Vendor: record.Vendor,
           AVAILABLE: record.AVAILABLE,
           CONDITION: record.CONDITION,
-          VEND_DELIVERY: record['VEND/DELIVERY'],
-          FINAL_DESTINATION: record['FINAL DESTINATION'],
+          VEND_DELIVERY: record['VEND_DELIVERY'],
+          FINAL_DESTINATION: record['FINAL_DESTINATION'],
           OBS: record.OBS,
-          // EDD_vendor: record.EDD_vendor,
-          // EDD_Customer: record.EDD_Customer,
-          PN_Manufacturer: record['PN Manufacturer'],
-          Status_Quantum: record['Status Quantum'],
-          vendor_PO: record['vendor PO '],
+          PN_Manufacturer: record['PN_Manufacturer'],
+          Status_Quantum: record['Status_Quantum'],
+          vendor_PO: record['vendor_PO '],
           SO: record.SO,
-          money_LUCRO: Number(extrairNumeros(record['$ LUCRO'].replace(',', '.'))),
-          Total_LUCRO: Number(extrairNumeros(record['Total LUCRO'].replace(',', '.'))),
-          Sales_Code: record['Sales Code'],
+          money_LUCRO: Number(
+            extrairNumeros(record['money_LUCRO'].replace(',', '.')),
+          ),
+          Total_LUCRO: Number(
+            extrairNumeros(record['Total_LUCRO'].replace(',', '.')),
+          ),
+          Sales_Code: record['Sales_Code'],
           ABBREV: record.ABBREV,
           EMAIL: record.EMAIL,
-          Cotacao_Quantum: record['Cotação Quantum'],
+          Cotacao_Quantum: record['Cotacao_Quantum'],
+          Customer_PO_Receipt: record['Customer_PO_Receipt'],
+          Location: record['Location'],
         };
         const response = await prisma.quotesCSV.create({ data: mappedData });
         console.log(i++);
+        // console.log(mappedData);
       }
     });
-    
-    await prisma.$disconnect();
+
+  await prisma.$disconnect();
 }
-
-
-
 
 const prisma = new PrismaClient();
 
 async function limparTabela() {
   try {
-    await prisma.data.deleteMany({}); 
+    await prisma.data.deleteMany({});
 
     await prisma.$executeRaw`ALTER SEQUENCE "Data_id_seq" RESTART WITH 1`;
-
 
     console.log('Tabela limpa com sucesso.');
   } catch (error) {
@@ -92,8 +92,6 @@ async function limparTabela() {
     await prisma.$disconnect();
   }
 }
-
-
 
 main();
 // limparTabela();

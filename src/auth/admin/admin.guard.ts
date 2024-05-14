@@ -6,9 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 export class AdminGuard implements CanActivate {
   constructor(private readonly jwtService: JwtService) {}
 
-  canActivate(
-    context: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(context: ExecutionContext,): boolean | Promise<boolean> | Observable<boolean> {
     const request = context.switchToHttp().getRequest();
     const token = request.headers.authorization?.split(' ')[1]; // Extrai o token do cabeçalho Authorization
 
@@ -21,9 +19,6 @@ export class AdminGuard implements CanActivate {
       const permissions: string[] = decodedToken.permissions;
 
       
-      console.log('Token: =>' + JSON.stringify(decodedToken));
-      console.log('=====>>>' + permissions.includes('role:admin'));
-
       // // Verifica se o token contém a permissão "role:admin"
       if (permissions && permissions.includes('role:admin')) {
         return true; // Se o usuário tiver a permissão, concede o acesso

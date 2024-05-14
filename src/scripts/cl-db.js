@@ -80,9 +80,9 @@ const prisma = new PrismaClient();
 
 async function limparTabela() {
   try {
-    await prisma.data.deleteMany({}); 
+    await prisma.quotesCSV.deleteMany({}); 
 
-    await prisma.$executeRaw`ALTER SEQUENCE "Data_id_seq" RESTART WITH 1`;
+    await prisma.$executeRaw`ALTER SEQUENCE "QuotesCSV_id_seq" RESTART WITH 1`;
 
 
     console.log('Tabela limpa com sucesso.');
