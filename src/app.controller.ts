@@ -1,25 +1,19 @@
 import { Controller, Get, UseGuards } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthGuard } from './auth/auth.guard';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @UseGuards(AuthGuard)
-  @Get('private')
-  private(): string {
-    return this.appService.private();
-  }
-
+  @ApiOperation({
+    summary: 'Ping',
+    description:
+      'Retorna um Ok. Serve apenas para verificar que a aplicação foi iniciada corretamente e está funcionando.',
+  })
   @Get()
   asd(): string {
-    return "Hello World!";
-  }
-
-  @UseGuards(AuthGuard)
-  @Get('weweb')
-  wewebTest() {
-    return this.appService.wewebTest();
+    return 'Ok';
   }
 }

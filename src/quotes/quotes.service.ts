@@ -20,12 +20,17 @@ export class QuotesService {
     if (token) {
       const decodedToken = this.jwtService.decode(token); // Decodifica o token JWT
       const permissions: string[] = decodedToken.permissions;
-      const company = permissions.filter((perm) => perm.startsWith('company:'));
+      const companyFull = permissions.filter((perm) =>
+        perm.startsWith('company:'),
+      )[0];
+      const company = companyFull ? companyFull.split(':')[1] : '';
 
-      console.log("\n\n\n");
-      console.log("======>>>>");
+      console.log('\n\n\n');
+      console.log('======>>>>');
       console.log(company);
       console.log('\n\n\n');
+      if (company == "master") return '';
+      else return company; 
     }
   }
 
@@ -93,7 +98,66 @@ export class QuotesService {
     const skipNumber = parseInt(skip);
     const page = skipNumber * takeNumber;
 
-    this.checkCompany(req);
+    const query: Prisma.QuotesCSVFindManyArgs = {
+      skip: page,
+      take: takeNumber,
+      where: {},
+    };
+
+    if (filter) {
+      query.where = {
+        OR: [
+          {
+            NOME: {
+              contains: filter,
+              mode: 'insensitive',
+            },
+          },
+          {
+            Customer: {
+              contains: filter,
+              mode: 'insensitive',
+            },
+          },
+          {
+            PN: {
+              contains: filter,
+              mode: 'insensitive',
+            },
+          },
+          {
+            DESC: {
+              contains: filter,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    } 
+    const countQueryArgs: Prisma.QuotesCSVCountArgs = {
+      where: {},
+    };
+    countQueryArgs.where = query.where;
+
+
+    const countQuery = this.prismaService.quotesCSV.count(countQueryArgs);
+    const dataQuery = this.prismaService.quotesCSV.findMany(query);
+    const [count, data] = await Promise.all([countQuery, dataQuery]);
+
+    return { count, data };
+  }
+
+  async findAllInTableAndCompany(
+    req: Express.Request,
+    take: string,
+    skip: string,
+    table: string,
+    filter?: string,
+  ) {
+    const takeNumber = parseInt(take);
+    const skipNumber = parseInt(skip);
+    const page = skipNumber * takeNumber;
+    const company = this.checkCompany(req);
 
     const query: Prisma.QuotesCSVFindManyArgs = {
       skip: page,
@@ -138,14 +202,30 @@ export class QuotesService {
               mode: 'insensitive',
             },
           },
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
         ],
       };
     } else {
       query.where = {
-        Table: {
-          equals: table,
-          mode: 'insensitive',
-        },
+        AND: [
+          {
+            Table: {
+              equals: table,
+              mode: 'insensitive',
+            },
+          },
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
+        ],
       };
     }
 
@@ -153,54 +233,7 @@ export class QuotesService {
       where: {},
     };
 
-    if (filter) {
-      countQueryArgs.where = {
-        AND: [
-          {
-            OR: [
-              {
-                NOME: {
-                  contains: filter,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                Customer: {
-                  contains: filter,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                PN: {
-                  contains: filter,
-                  mode: 'insensitive',
-                },
-              },
-              {
-                DESC: {
-                  contains: filter,
-                  mode: 'insensitive',
-                },
-              },
-            ],
-          },
-          {
-            Table: {
-              equals: table,
-              mode: 'insensitive',
-            },
-          },
-        ],
-      };
-      // console.log('====> ' + countQueryArgs);
-    } else {
-      countQueryArgs.where = {
-        Table: {
-          equals: table,
-          mode: 'insensitive',
-        },
-      };
-    }
+    countQueryArgs.where = query.where;
 
     const countQuery = this.prismaService.quotesCSV.count(countQueryArgs);
     const dataQuery = this.prismaService.quotesCSV.findMany(query);
@@ -209,55 +242,8 @@ export class QuotesService {
     return { count, data };
   }
 
-  async export(res, filter: string) {
-    const query: Prisma.QuotesCSVFindManyArgs = {
-      where: {},
-    };
 
-    if (filter) {
-      query.where = {
-        OR: [
-          {
-            NOME: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            Customer: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            PN: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            DESC: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-        ],
-      };
-    }
-
-    try {
-      const data = await this.prismaService.quotesCSV.findMany(query);
-
-      res.setHeader('Content-Type', 'text/csv');
-      res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
-
-      fastcsv.write(data, { headers: true }).pipe(res);
-    } catch (error) {
-      res.status(500).send('Erro ao exportar dados como CSV');
-    }
-  }
-
-  async export2(res, filter: string, pageSize: number = 100) {
+  async export(res, filter: string, pageSize: number = 100) {
     let skip = 0;
     let hasNextPage = true;
 

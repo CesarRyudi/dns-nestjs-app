@@ -15,10 +15,6 @@ async function bootstrap() {
       'Um conjunto de apis que alimentam um aplicativo específico da DNS. A Autenticação é feita usando o Auth0 e os dados principais estão em um banco PostgreSQL.',
     )
     .setVersion('0.7')
-    .addTag('auth')
-    .addTag('users')
-    .addTag('testes')
-    .addTag('quotes-test')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
