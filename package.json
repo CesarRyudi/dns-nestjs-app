@@ -18,7 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "dev": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && set PORT=3001 && nest start --watch"
+    "dev": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && set PORT=3001 && nest start --watch",
+    "studio": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && npx prisma studio"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.2",

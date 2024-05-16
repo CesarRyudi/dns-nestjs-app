@@ -2,9 +2,13 @@
 import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
 
 export class CreateQuotesDto {
-  @IsNumber()
   @IsNotEmpty()
-  TABLE: number;
+  @IsString()
+  Log_Company: string;
+
+  @IsString()
+  @IsNotEmpty()
+  Table: string;
 
   @IsNotEmpty()
   @IsString()

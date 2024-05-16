@@ -17,14 +17,11 @@ async function bootstrap() {
     .setVersion('0.7')
     .build();
 
+
+    
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  // Defina o timeout para 5 minutos (300000 milissegundos)
-  app.use((req, res, next) => {
-    res.setTimeout(300000); // 5 minutos
-    next();
-  });
 
   const configService = new ConfigService;
   const port = configService.get('PORT')

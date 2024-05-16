@@ -33,6 +33,11 @@ export class QuotesController {
   create(@Body() createQuotesDto: CreateQuotesDto) {
     return this.quotesService.create(createQuotesDto);
   }
+  @applyDecorators(...notImplemented())
+  @Post('multiple')
+  createMultiple(@Body() createQuotesDto: CreateQuotesDto[]) {
+    return this.quotesService.createMultiple(createQuotesDto);
+  }
 
   @applyDecorators(...notImplemented())
   @Post('csv')
