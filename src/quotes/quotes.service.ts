@@ -29,8 +29,8 @@ export class QuotesService {
       console.log('======>>>>');
       console.log(company);
       console.log('\n\n\n');
-      if (company == "master") return '';
-      else return company; 
+      if (company == 'master') return '';
+      else return company;
     }
   }
 
@@ -133,12 +133,11 @@ export class QuotesService {
           },
         ],
       };
-    } 
+    }
     const countQueryArgs: Prisma.QuotesCSVCountArgs = {
       where: {},
     };
     countQueryArgs.where = query.where;
-
 
     const countQuery = this.prismaService.quotesCSV.count(countQueryArgs);
     const dataQuery = this.prismaService.quotesCSV.findMany(query);
@@ -163,7 +162,10 @@ export class QuotesService {
       skip: page,
       take: takeNumber,
       where: {},
-    };
+      orderBy: {
+        Date_RFQ: 'desc', // Isso ordenará os resultados pela data RFQ em ordem decrescente
+      },
+    }; 
 
     if (filter) {
       query.where = {
@@ -227,7 +229,7 @@ export class QuotesService {
           },
         ],
       };
-    }
+    } 
 
     const countQueryArgs: Prisma.QuotesCSVCountArgs = {
       where: {},
@@ -241,7 +243,6 @@ export class QuotesService {
 
     return { count, data };
   }
-
 
   async export(res, filter: string, pageSize: number = 100) {
     let skip = 0;

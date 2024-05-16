@@ -8,6 +8,14 @@ function extrairNumeros(str) {
   return str.replace(/[^\d.-]/g, ''); // Remove todos os caracteres exceto dígitos, ponto e traço
 }
 
+function extrairData(str) {
+  const partes = str.split('/');
+  const ano = partes[2];
+  const mes = partes[1].padStart(2, '0');
+  const dia = partes[0].padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
+
 async function main() {
   const prisma = new PrismaClient();
   let i = 0;
@@ -23,7 +31,7 @@ async function main() {
           Table: record['Table'],
           NOME: record['NOME'],
           PN: record.PN,
-          Date_RFQ: record['Date_RFQ'],
+          Date_RFQ: new Date(extrairData(record['Date_RFQ'])),
           UNIT_money:
             Number(extrairNumeros(record['UNIT_money'].replace(',', '.'))) || 0,
           UOM: record.UOM,
@@ -96,3 +104,4 @@ async function limparTabela() {
 main();
 // limparTabela();
 // console.log(Number(extrairNumeros('6,5528430034asd1297'.replace(',', '.'))));
+ 
