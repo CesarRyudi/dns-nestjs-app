@@ -18,9 +18,9 @@ import { QuotesService } from './quotes.service';
 import { CreateQuotesDto } from './dto/create-quote.dto';
 import { UpdateQuotesDto } from './dto/update-quote.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { getDocumentation, getExampleByIdDocumentation, getExport, notImplemented } from './documentation';
+import { deleteQuote, getDocumentation, getExampleByIdDocumentation, getExport, getQuoteUnique, notImplemented, patchQuotes, postQuotes, postQuotesMultiple } from './documentation';
 
 @ApiTags('quotes')
 @UseGuards(AuthGuard)
@@ -28,12 +28,12 @@ import { getDocumentation, getExampleByIdDocumentation, getExport, notImplemente
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 
-  @applyDecorators(...notImplemented())
+  @applyDecorators(...postQuotes())
   @Post()
   create(@Body() createQuotesDto: CreateQuotesDto) {
     return this.quotesService.create(createQuotesDto);
   }
-  @applyDecorators(...notImplemented())
+  @applyDecorators(...postQuotesMultiple())
   @Post('multiple')
   createMultiple(@Body() createQuotesDto: CreateQuotesDto[]) {
     return this.quotesService.createMultiple(createQuotesDto);
@@ -52,7 +52,7 @@ export class QuotesController {
     return this.quotesService.export(res, filter);
   }
 
-  @applyDecorators(...notImplemented())
+  @applyDecorators(...getQuoteUnique())
   @Get('id/:id')
   findOne(@Param('id') id: string) {
     return this.quotesService.findOne(+id);
@@ -76,15 +76,16 @@ export class QuotesController {
     );
   }
 
-  @applyDecorators(...notImplemented())
+  @applyDecorators(...patchQuotes())
   @Patch('id/:id')
   update(@Param('id') id: string, @Body() updateQuotesDto: UpdateQuotesDto) {
     return this.quotesService.update(+id, updateQuotesDto);
   }
 
-  @applyDecorators(...notImplemented())
+  @applyDecorators(...deleteQuote())
   @Delete('id/:id')
   remove(@Param('id') id: string) {
     return this.quotesService.remove(+id);
   }
 }
+

@@ -13,98 +13,96 @@ export class QuotesService {
     private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
-  
+
   checkCompany(req) {
     const token = req.headers.authorization?.split(' ')[1];
-    
+
     if (token) {
       const decodedToken = this.jwtService.decode(token); // Decodifica o token JWT
       const permissions: string[] = decodedToken.permissions;
       const companyFull = permissions.filter((perm) =>
         perm.startsWith('company:'),
-    )[0];
-    const company = companyFull ? companyFull.split(':')[1] : '';
-    
-    console.log('\n\n\n');
-    console.log('======>>>>');
-    console.log(company);
-    console.log('\n\n\n');
-    if (company == 'master') return '';
-    else return company;
+      )[0];
+      const company = companyFull ? companyFull.split(':')[1] : '';
+
+      console.log('\n\n\n');
+      console.log('======>>>>');
+      console.log(company);
+      console.log('\n\n\n');
+      if (company == 'master') return '';
+      else return company;
+    }
   }
-}
 
-uploadFile(file: any) {
-  throw new Error('Method not implemented.');
-}
+  uploadFile(file: any) {
+    throw new Error('Method not implemented.');
+  }
 
-async create(createQuotesDto: CreateQuotesDto) {
-  
-  return await this.prismaService.quotesCSV.create({
-    data: {
-      Log_Company: createQuotesDto.Log_Company,
-      Table: createQuotesDto.Table,
-      NOME: createQuotesDto.NOME,
-      PN: createQuotesDto.PN,
-      Date_RFQ: createQuotesDto.Date_RFQ,
-      UNIT_money: createQuotesDto.UNIT_money,
-      UOM: createQuotesDto.UOM,
-      Customer: createQuotesDto.Customer,
-      BUYER: createQuotesDto.BUYER,
-      DESC: createQuotesDto.DESC,
-      QTY: createQuotesDto.QTY,
-      PN_ALT: createQuotesDto.PN_ALT,
-      DESC_PN_ALT: createQuotesDto.DESC_PN_ALT,
-      OEM: createQuotesDto.OEM,
-      SOURCE_1: createQuotesDto.SOURCE_1,
-      SOURCE_2: createQuotesDto.SOURCE_2,
-      SOURCE_3: createQuotesDto.SOURCE_3,
-      DATE: createQuotesDto.DATE,
-      LT: createQuotesDto.LT,
-      REMARKS: createQuotesDto.REMARKS,
-      Concluido: createQuotesDto.Concluido,
-      Customer_PO: createQuotesDto.Customer_PO,
-      TERMS: createQuotesDto.TERMS,
-      CURRENCY: createQuotesDto.CURRENCY,
-      PRECO_COMPRA: createQuotesDto.PRECO_COMPRA,
-      Vendor: createQuotesDto.Vendor,
-      AVAILABLE: createQuotesDto.AVAILABLE,
-      CONDITION: createQuotesDto.CONDITION,
-      VEND_DELIVERY: createQuotesDto.VEND_DELIVERY,
-      FINAL_DESTINATION: createQuotesDto.FINAL_DESTINATION,
-      OBS: createQuotesDto.OBS,
-      PN_Manufacturer: createQuotesDto.PN_Manufacturer,
-      Status_Quantum: createQuotesDto.Status_Quantum,
-      vendor_PO: createQuotesDto.vendor_PO,
-      SO: createQuotesDto.SO,
-      money_LUCRO: createQuotesDto.money_LUCRO,
-      Total_LUCRO: createQuotesDto.Total_LUCRO,
-      Sales_Code: createQuotesDto.Sales_Code,
-      ABBREV: createQuotesDto.ABBREV,
-      EMAIL: createQuotesDto.EMAIL,
-      Cotacao_Quantum: createQuotesDto.Cotacao_Quantum,
-    },
-  });
-}
+  async create(createQuotesDto: CreateQuotesDto) {
+    return await this.prismaService.quotesCSV.create({
+      data: {
+        Log_Company: createQuotesDto.Log_Company,
+        Table: createQuotesDto.Table,
+        NOME: createQuotesDto.NOME,
+        PN: createQuotesDto.PN,
+        Date_RFQ: createQuotesDto.Date_RFQ,
+        UNIT_money: createQuotesDto.UNIT_money,
+        UOM: createQuotesDto.UOM,
+        Customer: createQuotesDto.Customer,
+        BUYER: createQuotesDto.BUYER,
+        DESC: createQuotesDto.DESC,
+        QTY: createQuotesDto.QTY,
+        PN_ALT: createQuotesDto.PN_ALT,
+        DESC_PN_ALT: createQuotesDto.DESC_PN_ALT,
+        OEM: createQuotesDto.OEM,
+        SOURCE_1: createQuotesDto.SOURCE_1,
+        SOURCE_2: createQuotesDto.SOURCE_2,
+        SOURCE_3: createQuotesDto.SOURCE_3,
+        DATE: createQuotesDto.DATE,
+        LT: createQuotesDto.LT,
+        REMARKS: createQuotesDto.REMARKS,
+        Concluido: createQuotesDto.Concluido,
+        Customer_PO: createQuotesDto.Customer_PO,
+        TERMS: createQuotesDto.TERMS,
+        CURRENCY: createQuotesDto.CURRENCY,
+        PRECO_COMPRA: createQuotesDto.PRECO_COMPRA,
+        Vendor: createQuotesDto.Vendor,
+        AVAILABLE: createQuotesDto.AVAILABLE,
+        CONDITION: createQuotesDto.CONDITION,
+        VEND_DELIVERY: createQuotesDto.VEND_DELIVERY,
+        FINAL_DESTINATION: createQuotesDto.FINAL_DESTINATION,
+        OBS: createQuotesDto.OBS,
+        PN_Manufacturer: createQuotesDto.PN_Manufacturer,
+        Status_Quantum: createQuotesDto.Status_Quantum,
+        vendor_PO: createQuotesDto.vendor_PO,
+        SO: createQuotesDto.SO,
+        money_LUCRO: createQuotesDto.money_LUCRO,
+        Total_LUCRO: createQuotesDto.Total_LUCRO,
+        Sales_Code: createQuotesDto.Sales_Code,
+        ABBREV: createQuotesDto.ABBREV,
+        EMAIL: createQuotesDto.EMAIL,
+        Cotacao_Quantum: createQuotesDto.Cotacao_Quantum,
+      },
+    });
+  }
   async createMultiple(createQuotesDtoArray: CreateQuotesDto[]) {
-  const createdQuotes: QuotesCSV[] = [];
-  
-     for (const createQuotesDto of createQuotesDtoArray) {
-       const createdQuote = await this.create(createQuotesDto);
-       createdQuotes.push(createdQuote);
-     }
+    const createdQuotes: QuotesCSV[] = [];
 
-     return createdQuotes;
+    for (const createQuotesDto of createQuotesDtoArray) {
+      const createdQuote = await this.create(createQuotesDto);
+      createdQuotes.push(createdQuote);
+    }
 
-}
+    return createdQuotes;
+  }
 
-async findAll(
-  req: Express.Request,
-  take: string,
-  skip: string,
-  table: string,
-  filter?: string,
-) {
+  async findAll(
+    req: Express.Request,
+    take: string,
+    skip: string,
+    table: string,
+    filter?: string,
+  ) {
     const takeNumber = parseInt(take);
     const skipNumber = parseInt(skip);
     const page = skipNumber * takeNumber;
@@ -176,7 +174,7 @@ async findAll(
       orderBy: {
         Date_RFQ: 'desc', // Isso ordenará os resultados pela data RFQ em ordem decrescente
       },
-    }; 
+    };
 
     if (filter) {
       query.where = {
@@ -240,7 +238,7 @@ async findAll(
           },
         ],
       };
-    } 
+    }
 
     const countQueryArgs: Prisma.QuotesCSVCountArgs = {
       where: {},
@@ -303,15 +301,20 @@ async findAll(
 
   async findOne(id: number) {
     return await this.prismaService.quotesCSV.findUnique({
-      where: { id },  
+      where: { id },
     });
   }
 
-  update(id: number, updateQuotesDto: UpdateQuotesDto) {
-    return `This action updates a #${id} quotes`;
+  async update(id: number, updateQuotesDto: UpdateQuotesDto) {
+    return this.prismaService.quotesCSV.update({
+      where: { id },
+      data: updateQuotesDto,
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} quotes`;
+  async remove(id: number) {
+    return await this.prismaService.quotesCSV.delete({
+      where: { id },
+    });
   }
 }
