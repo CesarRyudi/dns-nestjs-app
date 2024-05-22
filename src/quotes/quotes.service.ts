@@ -27,7 +27,7 @@ export class QuotesService {
 
       console.log('\n\n\n');
       console.log('======>>>>');
-      console.log(company);
+      console.log(JSON.stringify(decodedToken));
       console.log('\n\n\n');
       if (company == 'master') return '';
       else return company;
