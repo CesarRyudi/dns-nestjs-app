@@ -18,6 +18,8 @@ export class AdminGuard implements CanActivate {
       const decodedToken = this.jwtService.decode(token); // Decodifica o token JWT
       const permissions: string[] = decodedToken.permissions;
 
+      console.log('TOken permissions: ' + permissions);
+      
       
       // // Verifica se o token contém a permissão "role:admin"
       if (permissions && permissions.includes('role:admin')) {

@@ -7,9 +7,6 @@ export class CreateQuotesDto {
     example: 'Aloia',
     description: `Empresa a quem pertence a cotação.`,
   })
-  @IsNotEmpty()
-  @IsString()
-  Log_Company: string;
 
   @ApiProperty({
     example: 'Quotes',

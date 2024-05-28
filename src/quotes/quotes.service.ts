@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateQuotesDto } from './dto/create-quote.dto';
 import { UpdateQuotesDto } from './dto/update-quote.dto';
 import { Prisma, QuotesCSV } from '@prisma/client';
@@ -6,6 +6,10 @@ import * as fastcsv from 'fast-csv';
 import { Readable } from 'stream';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
+import { InsertMultipleDto } from './dto/insert-multiple.dto';
+import { cp } from 'fs';
+const csv = require('csv-parser');
+
 
 @Injectable()
 export class QuotesService {
@@ -25,27 +29,111 @@ export class QuotesService {
       )[0];
       const company = companyFull ? companyFull.split(':')[1] : '';
 
-      console.log('\n\n\n');
-      console.log('======>>>>');
-      console.log(JSON.stringify(decodedToken));
-      console.log('\n\n\n');
-      if (company == 'master') return '';
+      if (company.length < 1) return 'erro';
+      else if (company == 'master') return '';
       else return company;
     }
   }
 
-  uploadFile(file: any) {
-    throw new Error('Method not implemented.');
+  async uploadFile(req: Express.Request, file: any, name:string) {
+    const company = await this.checkCompany(req);
+
+    const results = [];
+
+    function extrairNumeros(str: string) {
+      return str.replace(/[^\d.-]/g, ''); // Remove todos os caracteres exceto dígitos, ponto e traço
+    }
+
+    const stream = new Readable();
+    stream.push(file.buffer);
+    stream.push(null);
+
+    return new Promise((resolve, reject) => {
+      stream
+        .pipe(csv({ separator: ';' }))
+        .on('data', (data) => results.push(data))
+        .on('end', async () => {
+          try {
+            let i = 0;
+            for (const record of results) {
+              const mappedData = {
+                Log_Company: company,
+                Table: record['Table'],
+                NOME: name,
+                PN: record.PN,
+                UNIT_money:
+                  Number(
+                    extrairNumeros(record['UNIT_money'].replace(',', '.')),
+                  ) || 0,
+                UOM: record.UOM,
+                Customer: record.Customer,
+                BUYER: record.BUYER,
+                DESC: record.DESC,
+                QTY: record['QTY'],
+                PN_ALT: record['PN_ALT'],
+                DESC_PN_ALT: record['DESC_PN_ALT'],
+                OEM: record.OEM,
+                SOURCE_1: record['SOURCE_1'],
+                SOURCE_2: record['SOURCE_2'],
+                SOURCE_3: record['SOURCE_3'],
+                DATE: record.DATE,
+                LT: record.LT,
+                REMARKS: record.REMARKS,
+                Concluido: record.Concluido,
+                Customer_PO: record['Customer_PO'],
+                TERMS: record.TERMS,
+                CURRENCY: record.CURRENCY,
+                PRECO_COMPRA: record['PRECO_COMPRA'],
+                Vendor: record.Vendor,
+                AVAILABLE: record.AVAILABLE,
+                CONDITION: record.CONDITION,
+                VEND_DELIVERY: record['VEND_DELIVERY'],
+                FINAL_DESTINATION: record['FINAL_DESTINATION'],
+                OBS: record.OBS,
+                PN_Manufacturer: record['PN_Manufacturer'],
+                Status_Quantum: record['Status_Quantum'],
+                vendor_PO: record['vendor_PO '],
+                SO: record.SO,
+                money_LUCRO: Number(
+                  extrairNumeros(record['money_LUCRO'].replace(',', '.')),
+                ),
+                Total_LUCRO: Number(
+                  extrairNumeros(record['Total_LUCRO'].replace(',', '.')),
+                ),
+                Sales_Code: record['Sales_Code'],
+                ABBREV: record.ABBREV,
+                EMAIL: record.EMAIL,
+                Cotacao_Quantum: record['Cotacao_Quantum'],
+                Customer_PO_Receipt: record['Customer_PO_Receipt'],
+                Location: record['Location'],
+              };
+
+              await this.prismaService.quotesCSV.create({ data: mappedData });
+              console.log(i++);
+            }
+
+            resolve({ message: 'CSV processed successfully' });
+          } catch (error) {
+            reject({ message: 'Error processing CSV', error });
+            throw new InternalServerErrorException(error);
+          }
+        })
+        .on('error', (error) => {
+          reject({ message: 'Error reading CSV file', error });
+        });
+    });
   }
 
-  async create(createQuotesDto: CreateQuotesDto) {
+  async create(req: Express.Request, createQuotesDto: CreateQuotesDto) {
+    const company = this.checkCompany(req);
+
     return await this.prismaService.quotesCSV.create({
       data: {
-        Log_Company: createQuotesDto.Log_Company,
+        Log_Company: company,
         Table: createQuotesDto.Table,
         NOME: createQuotesDto.NOME,
         PN: createQuotesDto.PN,
-        Date_RFQ: createQuotesDto.Date_RFQ,
+        Date_RFQ:createQuotesDto.Date_RFQ,
         UNIT_money: createQuotesDto.UNIT_money,
         UOM: createQuotesDto.UOM,
         Customer: createQuotesDto.Customer,
@@ -85,15 +173,178 @@ export class QuotesService {
       },
     });
   }
-  async createMultiple(createQuotesDtoArray: CreateQuotesDto[]) {
+  async createMultiple(
+    req: Express.Request,
+    createQuotesDtoArray: CreateQuotesDto[],
+  ) {
     const createdQuotes: QuotesCSV[] = [];
 
     for (const createQuotesDto of createQuotesDtoArray) {
-      const createdQuote = await this.create(createQuotesDto);
+      const createdQuote = await this.create(req, createQuotesDto);
       createdQuotes.push(createdQuote);
     }
 
     return createdQuotes;
+  }
+
+  async consultaMassa(
+    req: Express.Request,
+    insertMultipleDto: InsertMultipleDto,
+  ) {
+    const take = insertMultipleDto.take;
+    const skipNumber = insertMultipleDto.skip;
+    const skip = skipNumber * take;
+    const table = insertMultipleDto.table;
+
+    const company = this.checkCompany(req);
+
+    const linhas = insertMultipleDto.data
+      .split('\n')
+      .filter((linha) => linha.trim() !== '');
+
+    const query: Prisma.QuotesCSVFindManyArgs = {
+      skip,
+      take,
+      orderBy: [
+        {
+          PN: 'asc', // Campo principal para ordenar
+        },
+        {
+          Date_RFQ: 'desc', // Campo secundário para ordenar em caso de empate
+        },
+      ],
+      where: {
+        AND: [
+          {
+            OR: linhas.map((pn) => ({
+              PN: {
+                contains: pn,
+                mode: 'insensitive',
+              },
+            })),
+          },
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+    };
+
+    if (table) {
+      query.where = {
+        AND: [
+          {
+            OR: linhas.map((pn) => ({
+              PN: {
+                contains: pn,
+                mode: 'insensitive',
+              },
+            })),
+          },
+          {
+            Table: {
+              equals: table,
+              mode: 'insensitive',
+            },
+          },
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    }
+
+    const countQuery: Prisma.QuotesCSVCountArgs = {
+      where: {
+        AND: [
+          {
+            OR: linhas.map((pn) => ({
+              PN: {
+                contains: pn,
+                mode: 'insensitive',
+              },
+            })),
+          },
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      },
+    };
+
+    function contDinamica(tabela: string): Prisma.QuotesCSVCountArgs {
+      return {
+        where: {
+          AND: [
+            {
+              OR: linhas.map((pn) => ({
+                PN: {
+                  contains: pn,
+                  mode: 'insensitive',
+                },
+              })),
+            },
+            {
+              Table: {
+                equals: tabela,
+                mode: 'insensitive',
+              },
+            },
+            {
+              Log_Company: {
+                contains: company,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+      };
+    }
+
+    const results = await this.prismaService.quotesCSV.findMany(query);
+
+    const totalRecords = await this.prismaService.quotesCSV.count(countQuery);
+
+    const cont = await this.prismaService.quotesCSV.count(
+      contDinamica(insertMultipleDto.table),
+    );
+    const totalQuotes = await this.prismaService.quotesCSV.count(
+      contDinamica('quotes'),
+    );
+    const totalSales = await this.prismaService.quotesCSV.count(
+      contDinamica('sales'),
+    );
+    const totalInventory = await this.prismaService.quotesCSV.count(
+      contDinamica('inventory'),
+    );
+    const totalPartners = await this.prismaService.quotesCSV.count(
+      contDinamica('partners'),
+    );
+    const totalTestes = await this.prismaService.quotesCSV.count(
+      contDinamica('TESTE'),
+    );
+
+    return {
+      conts: {
+        result: totalRecords,
+        quotes: totalQuotes,
+        sales: totalSales,
+        inventory: totalInventory,
+        partners: totalPartners,
+        testes: totalTestes,
+      },
+      cont,
+      data: results,
+    };
   }
 
   async findAll(
@@ -148,9 +399,8 @@ export class QuotesService {
     };
     countQueryArgs.where = query.where;
 
-    const countQuery = this.prismaService.quotesCSV.count(countQueryArgs);
-    const dataQuery = this.prismaService.quotesCSV.findMany(query);
-    const [count, data] = await Promise.all([countQuery, dataQuery]);
+    const count = await this.prismaService.quotesCSV.count(countQueryArgs);
+    const data = await this.prismaService.quotesCSV.findMany(query);
 
     return { count, data };
   }
@@ -246,11 +496,87 @@ export class QuotesService {
 
     countQueryArgs.where = query.where;
 
-    const countQuery = this.prismaService.quotesCSV.count(countQueryArgs);
-    const dataQuery = this.prismaService.quotesCSV.findMany(query);
-    const [count, data] = await Promise.all([countQuery, dataQuery]);
+    function contDinamica(tabela: string): Prisma.QuotesCSVCountArgs {
+      return {
+        where: {
+          AND: [
+            {
+              OR: [
+                {
+                  NOME: {
+                    contains: filter,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  Customer: {
+                    contains: filter,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  PN: {
+                    contains: filter,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  DESC: {
+                    contains: filter,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            },
+            {
+              Table: {
+                equals: tabela,
+                mode: 'insensitive',
+              },
+            },
+            {
+              Log_Company: {
+                contains: company,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+      };
+    }
 
-    return { count, data };
+    const data = await this.prismaService.quotesCSV.findMany(query);
+
+    const count = await this.prismaService.quotesCSV.count(countQueryArgs);
+
+    // const totalQuotes = await this.prismaService.quotesCSV.count(
+    //   contDinamica('quotes'),
+    // );
+    // const totalSales = await this.prismaService.quotesCSV.count(
+    //   contDinamica('sales'),
+    // );
+    // const totalInventory = await this.prismaService.quotesCSV.count(
+    //   contDinamica('inventory'),
+    // );
+    // const totalPartners = await this.prismaService.quotesCSV.count(
+    //   contDinamica('partners'),
+    // );
+    // const totalTestes = await this.prismaService.quotesCSV.count(
+    //   contDinamica('TESTE'),
+    // );
+
+    return {
+      // conts: {
+      //   // result: totalRecords,
+      //   quotes: totalQuotes,
+      //   sales: totalSales,
+      //   inventory: totalInventory,
+      //   partners: totalPartners,
+      //   testes: totalTestes,
+      // },
+      count,
+      data,
+    };
   }
 
   async export(res, filter: string, pageSize: number = 100) {

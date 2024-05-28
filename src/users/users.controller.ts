@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, applyDecorators } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, applyDecorators, Req } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -15,14 +15,14 @@ export class UsersController {
 
   @applyDecorators(...postUser())
   @Post()
-  create(@Body() createUserDto: CreateUserDto) {
-    return this.usersService.create(createUserDto);
+  create(@Req() req: Request, @Body() createUserDto: CreateUserDto) {
+    return this.usersService.create(req, createUserDto);
   }
 
   @applyDecorators(...getUsers())
   @Get()
-  findAll() {
-    return this.usersService.findAll();
+  findAll(@Req() req: Request) {
+    return this.usersService.findAll(req);
   }
 
   @applyDecorators(...deleteUser())

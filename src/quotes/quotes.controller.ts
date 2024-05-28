@@ -18,9 +18,20 @@ import { QuotesService } from './quotes.service';
 import { CreateQuotesDto } from './dto/create-quote.dto';
 import { UpdateQuotesDto } from './dto/update-quote.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBody, ApiOperation, ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiTags } from '@nestjs/swagger';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { deleteQuote, getDocumentation, getExampleByIdDocumentation, getExport, getQuoteUnique, notImplemented, patchQuotes, postQuotes, postQuotesMultiple } from './documentation';
+import {
+  deleteQuote,
+  getDocumentation,
+  getExport,
+  getQuoteUnique,
+  notImplemented,
+  patchQuotes,
+  postQuotes,
+  postQuotesMultiple,
+} from './documentation';
+import { Express } from 'express';
+import { InsertMultipleDto } from './dto/insert-multiple.dto';
 
 @ApiTags('quotes')
 @UseGuards(AuthGuard)
@@ -30,20 +41,37 @@ export class QuotesController {
 
   @applyDecorators(...postQuotes())
   @Post()
-  create(@Body() createQuotesDto: CreateQuotesDto) {
-    return this.quotesService.create(createQuotesDto);
+  create(@Req() req: Request, @Body() createQuotesDto: CreateQuotesDto) {
+    return this.quotesService.create(req, createQuotesDto);
   }
+
   @applyDecorators(...postQuotesMultiple())
   @Post('multiple')
-  createMultiple(@Body() createQuotesDto: CreateQuotesDto[]) {
-    return this.quotesService.createMultiple(createQuotesDto);
+  createMultiple(
+    @Req() req: Request,
+    @Body() createQuotesDto: CreateQuotesDto[],
+  ) {
+    return this.quotesService.createMultiple(req, createQuotesDto);
   }
 
   @applyDecorators(...notImplemented())
-  @Post('csv')
+  @Post('consulta_massa')
+  async consultaMassa(
+    @Req() req: Request,
+    @Body() insertMultipleDto: InsertMultipleDto,
+  ) {
+    return this.quotesService.consultaMassa(req, insertMultipleDto);
+  }
+
+  @applyDecorators(...notImplemented())
+  @Post('csv/:name')
   @UseInterceptors(FileInterceptor('file'))
-  async uploadFile(@UploadedFile() file) {
-    return this.quotesService.uploadFile(file);
+  async uploadFile(
+    @Req() req: Request,
+    @UploadedFile() file,
+    @Param('name') name: string,
+  ) {
+    return this.quotesService.uploadFile(req, file, name);
   }
 
   @applyDecorators(...getExport())
@@ -88,4 +116,3 @@ export class QuotesController {
     return this.quotesService.remove(+id);
   }
 }
-

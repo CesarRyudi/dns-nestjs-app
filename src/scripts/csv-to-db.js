@@ -25,7 +25,6 @@ async function main() {
     .on('data', (data) => results.push(data))
     .on('end', async () => {
       for (const record of results) {
-        // console.log("\n\nRecord: =====>>" + JSON.stringify(record) + "\n\n");
         const mappedData = {
           Log_Company: record.Log_Company,
           Table: record['Table'],
@@ -78,30 +77,14 @@ async function main() {
         };
         const response = await prisma.quotesCSV.create({ data: mappedData });
         console.log(i++);
-        // console.log(mappedData);
       }
     });
 
   await prisma.$disconnect();
 }
 
-const prisma = new PrismaClient();
 
-async function limparTabela() {
-  try {
-    await prisma.data.deleteMany({});
-
-    await prisma.$executeRaw`ALTER SEQUENCE "Data_id_seq" RESTART WITH 1`;
-
-    console.log('Tabela limpa com sucesso.');
-  } catch (error) {
-    console.error('Erro ao limpar a tabela:', error);
-  } finally {
-    await prisma.$disconnect();
-  }
-}
 
 main();
-// limparTabela();
 // console.log(Number(extrairNumeros('6,5528430034asd1297'.replace(',', '.'))));
  
