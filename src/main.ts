@@ -17,15 +17,13 @@ async function bootstrap() {
     .setVersion('0.7')
     .build();
 
-
-    
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-
-  const configService = new ConfigService;
-  const port = configService.get('PORT')
+  const configService = new ConfigService();
+  const port = configService.get('PORT');
 
   await app.listen(port);
+  console.log(`Server ruinning on port: ${port}`);
 }
 bootstrap();

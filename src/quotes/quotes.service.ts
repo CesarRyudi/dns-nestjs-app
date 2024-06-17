@@ -8,8 +8,10 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { InsertMultipleDto } from './dto/insert-multiple.dto';
 import { cp } from 'fs';
+import { InsertFromCsv } from './dto/insert-from-csv.dto';
+import axios from 'axios';
+import { FindAllParamsDto } from './dto/find-all.dto';
 const csv = require('csv-parser');
-
 
 @Injectable()
 export class QuotesService {
@@ -19,6 +21,8 @@ export class QuotesService {
   ) {}
 
   checkCompany(req) {
+    console.log('-- checkCompany --');
+
     const token = req.headers.authorization?.split(' ')[1];
 
     if (token) {
@@ -29,13 +33,56 @@ export class QuotesService {
       )[0];
       const company = companyFull ? companyFull.split(':')[1] : '';
 
+      console.log(`-- Company ${company} --`);
+
       if (company.length < 1) return 'erro';
       else if (company == 'master') return '';
       else return company;
     }
   }
 
-  async uploadFile(req: Express.Request, file: any, name:string) {
+  async uploadFileFromWeweb(
+    req: Express.Request,
+    insertFromCsv: InsertFromCsv,
+  ) {
+    console.log('-- uploadFileFromWeweb --');
+
+    const streamToBuffer = async (stream: Readable): Promise<Buffer> => {
+      const chunks: Uint8Array[] = [];
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+      return Buffer.concat(chunks);
+    };
+
+    try {
+      const response = await axios.get(insertFromCsv.url, {
+        responseType: 'arraybuffer',
+      });
+
+      const stream = new Readable();
+      stream.push(response.data);
+      stream.push(null);
+
+      const buffer = await streamToBuffer(stream);
+
+      return await this.uploadFile(req, buffer, insertFromCsv.name, true);
+
+      // return await this.uploadFile(req, fileBuffer, insertFromCsv.name);
+    } catch (error) {
+      console.error(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  async uploadFile(
+    req: Express.Request,
+    file: any,
+    name: string,
+    weweb: boolean = false,
+  ) {
+    console.log('-- uploadFile --');
+
     const company = await this.checkCompany(req);
 
     const results = [];
@@ -45,7 +92,7 @@ export class QuotesService {
     }
 
     const stream = new Readable();
-    stream.push(file.buffer);
+    stream.push(weweb ? file : file.buffer);
     stream.push(null);
 
     return new Promise((resolve, reject) => {
@@ -108,8 +155,11 @@ export class QuotesService {
                 Location: record['Location'],
               };
 
-              await this.prismaService.quotesCSV.create({ data: mappedData });
+              const prismaResponse = await this.prismaService.quotesCSV.create({
+                data: mappedData,
+              });
               console.log(i++);
+              console.log(prismaResponse);
             }
 
             resolve({ message: 'CSV processed successfully' });
@@ -125,6 +175,7 @@ export class QuotesService {
   }
 
   async create(req: Express.Request, createQuotesDto: CreateQuotesDto) {
+    console.log('-- create --');
     const company = this.checkCompany(req);
 
     return await this.prismaService.quotesCSV.create({
@@ -133,7 +184,7 @@ export class QuotesService {
         Table: createQuotesDto.Table,
         NOME: createQuotesDto.NOME,
         PN: createQuotesDto.PN,
-        Date_RFQ:createQuotesDto.Date_RFQ,
+        Date_RFQ: createQuotesDto.Date_RFQ,
         UNIT_money: createQuotesDto.UNIT_money,
         UOM: createQuotesDto.UOM,
         Customer: createQuotesDto.Customer,
@@ -173,10 +224,12 @@ export class QuotesService {
       },
     });
   }
+
   async createMultiple(
     req: Express.Request,
     createQuotesDtoArray: CreateQuotesDto[],
   ) {
+    console.log('-- createMultiple --');
     const createdQuotes: QuotesCSV[] = [];
 
     for (const createQuotesDto of createQuotesDtoArray) {
@@ -191,6 +244,7 @@ export class QuotesService {
     req: Express.Request,
     insertMultipleDto: InsertMultipleDto,
   ) {
+    console.log('-- consultaMassa --');
     const take = insertMultipleDto.take;
     const skipNumber = insertMultipleDto.skip;
     const skip = skipNumber * take;
@@ -347,73 +401,15 @@ export class QuotesService {
     };
   }
 
-  async findAll(
-    req: Express.Request,
-    take: string,
-    skip: string,
-    table: string,
-    filter?: string,
-  ) {
-    const takeNumber = parseInt(take);
-    const skipNumber = parseInt(skip);
-    const page = skipNumber * takeNumber;
-
-    const query: Prisma.QuotesCSVFindManyArgs = {
-      skip: page,
-      take: takeNumber,
-      where: {},
-    };
-
-    if (filter) {
-      query.where = {
-        OR: [
-          {
-            NOME: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            Customer: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            PN: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-          {
-            DESC: {
-              contains: filter,
-              mode: 'insensitive',
-            },
-          },
-        ],
-      };
-    }
-    const countQueryArgs: Prisma.QuotesCSVCountArgs = {
-      where: {},
-    };
-    countQueryArgs.where = query.where;
-
-    const count = await this.prismaService.quotesCSV.count(countQueryArgs);
-    const data = await this.prismaService.quotesCSV.findMany(query);
-
-    return { count, data };
-  }
+  async findAll() {}
 
   async findAllInTableAndCompany(
     req: Express.Request,
-    take: string,
-    skip: string,
-    table: string,
-    filter?: string,
+    params: FindAllParamsDto,
   ) {
-    const takeNumber = parseInt(take);
-    const skipNumber = parseInt(skip);
+    console.log('-- findAllInTableAndCompany --');
+    const takeNumber = parseInt(params.take);
+    const skipNumber = parseInt(params.skip);
     const page = skipNumber * takeNumber;
     const company = this.checkCompany(req);
 
@@ -422,36 +418,36 @@ export class QuotesService {
       take: takeNumber,
       where: {},
       orderBy: {
-        Date_RFQ: 'desc', // Isso ordenará os resultados pela data RFQ em ordem decrescente
+        Date_RFQ: 'desc',
       },
     };
 
-    if (filter) {
+    if (params.filter) {
       query.where = {
         AND: [
           {
             OR: [
               {
                 NOME: {
-                  contains: filter,
+                  contains: params.filter,
                   mode: 'insensitive',
                 },
               },
               {
                 Customer: {
-                  contains: filter,
+                  contains: params.filter,
                   mode: 'insensitive',
                 },
               },
               {
                 PN: {
-                  contains: filter,
+                  contains: params.filter,
                   mode: 'insensitive',
                 },
               },
               {
                 DESC: {
-                  contains: filter,
+                  contains: params.filter,
                   mode: 'insensitive',
                 },
               },
@@ -459,7 +455,7 @@ export class QuotesService {
           },
           {
             Table: {
-              equals: table,
+              equals: params.table,
               mode: 'insensitive',
             },
           },
@@ -476,7 +472,7 @@ export class QuotesService {
         AND: [
           {
             Table: {
-              equals: table,
+              equals: params.table,
               mode: 'insensitive',
             },
           },
@@ -499,6 +495,82 @@ export class QuotesService {
     function contDinamica(tabela: string): Prisma.QuotesCSVCountArgs {
       return {
         where: {
+          AND: [
+            {
+              OR: [
+                {
+                  NOME: {
+                    contains: params.filter,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  Customer: {
+                    contains: params.filter,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  PN: {
+                    contains: params.filter,
+                    mode: 'insensitive',
+                  },
+                },
+                {
+                  DESC: {
+                    contains: params.filter,
+                    mode: 'insensitive',
+                  },
+                },
+              ],
+            },
+            {
+              Table: {
+                equals: tabela,
+                mode: 'insensitive',
+              },
+            },
+            {
+              Log_Company: {
+                contains: company,
+                mode: 'insensitive',
+              },
+            },
+          ],
+        },
+      };
+    }
+
+    const data = await this.prismaService.quotesCSV.findMany(query);
+
+    const count = await this.prismaService.quotesCSV.count(countQueryArgs);
+
+    return {
+      count,
+      data,
+    };
+  }
+
+  async export(res, company: string, filter: string, pageSize: number = 100) {
+    console.log('-- export --');
+    let skip = 0;
+    let hasNextPage = true;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
+
+    const csvStream = fastcsv.format({ headers: true });
+    csvStream.pipe(res);
+
+    while (hasNextPage) {
+      const query: Prisma.QuotesCSVFindManyArgs = {
+        where: {},
+        take: pageSize,
+        skip: skip,
+      };
+
+      if (filter) {
+        query.where = {
           AND: [
             {
               OR: [
@@ -529,80 +601,11 @@ export class QuotesService {
               ],
             },
             {
-              Table: {
-                equals: tabela,
-                mode: 'insensitive',
-              },
-            },
-            {
               Log_Company: {
                 contains: company,
                 mode: 'insensitive',
               },
             },
-          ],
-        },
-      };
-    }
-
-    const data = await this.prismaService.quotesCSV.findMany(query);
-
-    const count = await this.prismaService.quotesCSV.count(countQueryArgs);
-
-    // const totalQuotes = await this.prismaService.quotesCSV.count(
-    //   contDinamica('quotes'),
-    // );
-    // const totalSales = await this.prismaService.quotesCSV.count(
-    //   contDinamica('sales'),
-    // );
-    // const totalInventory = await this.prismaService.quotesCSV.count(
-    //   contDinamica('inventory'),
-    // );
-    // const totalPartners = await this.prismaService.quotesCSV.count(
-    //   contDinamica('partners'),
-    // );
-    // const totalTestes = await this.prismaService.quotesCSV.count(
-    //   contDinamica('TESTE'),
-    // );
-
-    return {
-      // conts: {
-      //   // result: totalRecords,
-      //   quotes: totalQuotes,
-      //   sales: totalSales,
-      //   inventory: totalInventory,
-      //   partners: totalPartners,
-      //   testes: totalTestes,
-      // },
-      count,
-      data,
-    };
-  }
-
-  async export(res, filter: string, pageSize: number = 100) {
-    let skip = 0;
-    let hasNextPage = true;
-
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
-
-    const csvStream = fastcsv.format({ headers: true });
-    csvStream.pipe(res);
-
-    while (hasNextPage) {
-      const query: Prisma.QuotesCSVFindManyArgs = {
-        where: {},
-        take: pageSize,
-        skip: skip,
-      };
-
-      if (filter) {
-        query.where = {
-          OR: [
-            { NOME: { contains: filter, mode: 'insensitive' } },
-            { Customer: { contains: filter, mode: 'insensitive' } },
-            { PN: { contains: filter, mode: 'insensitive' } },
-            { DESC: { contains: filter, mode: 'insensitive' } },
           ],
         };
       }
@@ -625,13 +628,88 @@ export class QuotesService {
     csvStream.end();
   }
 
+  async exportNewATab(res, filter: string, pageSize: number = 100) {
+    console.log('-- exportNewATab --');
+    let skip = 0;
+    let hasNextPage = true;
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
+
+    const csvStream = fastcsv.format({ headers: true });
+    csvStream.pipe(res);
+
+    try {
+      while (hasNextPage) {
+        const query: Prisma.QuotesCSVFindManyArgs = {
+          where: {},
+          take: pageSize,
+          skip: skip,
+        };
+
+        if (filter) {
+          query.where = {
+            AND: [
+              {
+                OR: [
+                  {
+                    NOME: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    Customer: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    PN: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    DESC: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              },
+            ],
+          };
+        }
+
+        const data = await this.prismaService.quotesCSV.findMany(query);
+
+        if (data.length === 0) {
+          hasNextPage = false;
+        } else {
+          data.forEach((row) => csvStream.write(row));
+          skip += pageSize;
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao exportar dados como CSV', error);
+      if (!res.headersSent) {
+        res.status(500).send('Erro ao exportar dados como CSV');
+      }
+    } finally {
+      csvStream.end();
+    }
+  }
+
   async findOne(id: number) {
+    console.log('-- findOne --');
     return await this.prismaService.quotesCSV.findUnique({
       where: { id },
     });
   }
 
   async update(id: number, updateQuotesDto: UpdateQuotesDto) {
+    console.log('-- update --');
     return this.prismaService.quotesCSV.update({
       where: { id },
       data: updateQuotesDto,
@@ -639,6 +717,7 @@ export class QuotesService {
   }
 
   async remove(id: number) {
+    console.log('-- remove --');
     return await this.prismaService.quotesCSV.delete({
       where: { id },
     });

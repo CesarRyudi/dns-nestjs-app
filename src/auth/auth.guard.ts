@@ -44,7 +44,6 @@ export class AuthGuard implements CanActivate {
 
     try {
       await checkJWT(req, res);
-
       return true;
     } catch (error) {
       console.log(error);
