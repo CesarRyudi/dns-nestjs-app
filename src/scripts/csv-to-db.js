@@ -9,14 +9,21 @@ function extrairNumeros(str) {
 }
 
 function extrairData(str) {
-  const partes = str.split('/');
-  const ano = partes[2];
-  const mes = partes[1].padStart(2, '0');
-  const dia = partes[0].padStart(2, '0');
-  return `${ano}-${mes}-${dia}`;
+  if(str){
+    const partes = str.split('/');
+    console.log(partes);
+    const ano = partes[2];
+    const mes = partes[1].padStart(2, '0');
+    const dia = partes[0].padStart(2, '0');
+    return `${ano}-${mes}-${dia}`;
+  }
+  else return 0;
+
 }
 
 async function main() {
+  console.log(new Date('Invalid Date'));
+
   const prisma = new PrismaClient();
   let i = 0;
 
@@ -25,12 +32,15 @@ async function main() {
     .on('data', (data) => results.push(data))
     .on('end', async () => {
       for (const record of results) {
+        let date = new Date(extrairData(record['Date_RFQ']) ?? 0);
+        if(date == 'Invalid Date') date = new Date(0); 
+
         const mappedData = {
           Log_Company: record.Log_Company,
           Table: record['Table'],
           NOME: record['NOME'],
           PN: record.PN,
-          Date_RFQ: new Date(extrairData(record['Date_RFQ'])),
+          Date_RFQ: date,
           UNIT_money:
             Number(extrairNumeros(record['UNIT_money'].replace(',', '.'))) || 0,
           UOM: record.UOM,
@@ -83,8 +93,5 @@ async function main() {
   await prisma.$disconnect();
 }
 
-
-
 main();
 // console.log(Number(extrairNumeros('6,5528430034asd1297'.replace(',', '.'))));
- 

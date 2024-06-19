@@ -19,7 +19,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "dev": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && set PORT=3001 && nest start --watch",
-    "studio": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && npx prisma studio"
+    "studio": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && npx prisma studio",
+    "db": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && node src/scripts/csv-to-db.js",
+    "db-cl": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && node src/scripts/cl-db.js"
   },
   "dependencies": {
     "@nestjs/axios": "^3.0.2",
@@ -55,6 +57,7 @@
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
+    "cross-env": "^7.0.3",
     "eslint": "^8.42.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
