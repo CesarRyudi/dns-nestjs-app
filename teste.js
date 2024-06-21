@@ -1,5 +1,11 @@
 async function downloadFile(url, filename) {
-  const response = await fetch(url);
+  const token = '';
+
+  const response = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
@@ -60,12 +66,15 @@ function updateProgress(loaded, total) {
 }
 
 function updateVariable(value) {
-  wwLib.executeWorkflow('8b1cff4b-1d57-44c6-ab45-d1ddf9cd0b8a', {
+  wwLib.executeWorkflow('00a03ccf-ecbf-4dc9-a35c-655d0bc2be31', {
     value: value,
   });
 }
 
-const search = variables['14bb7e2f-7123-4569-bb50-85ef50c4d71e'];
+const search =
+  variables[
+    /* Search bar - value */ 'b33c515e-2929-4687-8322-8e230d7d8c11-value'
+  ];
 
 await downloadFile(
   `https://dns.harutech.com.br/quotes/exportTest/${search}`,

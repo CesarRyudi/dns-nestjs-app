@@ -701,10 +701,16 @@ export class QuotesService {
     }
   }
 
-  async exportTest(res, filter: string, pageSize: number = 100) {
+  async exportTest(
+    req: Express.Request,
+    res,
+    filter: string,
+    pageSize: number = 100,
+  ) {
     console.log('-- exportTest --');
     let skip = 0;
     let hasNextPage = true;
+    const company = this.checkCompany(req);
 
     const countQueryArgs: Prisma.QuotesCSVCountArgs = {
       where: {},
@@ -741,10 +747,26 @@ export class QuotesService {
               },
             ],
           },
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    } else {
+      countQueryArgs.where = {
+        AND: [
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
         ],
       };
     }
-
     const totalCount = await this.prismaService.quotesCSV.count(countQueryArgs);
 
     res.setHeader('Content-Type', 'text/csv');
@@ -762,40 +784,57 @@ export class QuotesService {
           skip: skip,
         };
 
-        if (filter) {
-          query.where = {
-            AND: [
+    if (filter) {
+      query.where = {
+        AND: [
+          {
+            OR: [
               {
-                OR: [
-                  {
-                    NOME: {
-                      contains: filter,
-                      mode: 'insensitive',
-                    },
-                  },
-                  {
-                    Customer: {
-                      contains: filter,
-                      mode: 'insensitive',
-                    },
-                  },
-                  {
-                    PN: {
-                      contains: filter,
-                      mode: 'insensitive',
-                    },
-                  },
-                  {
-                    DESC: {
-                      contains: filter,
-                      mode: 'insensitive',
-                    },
-                  },
-                ],
+                NOME: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                Customer: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                PN: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                DESC: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
               },
             ],
-          };
-        }
+          },
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    } else {
+      query.where = {
+        AND: [
+          {
+            Log_Company: {
+              contains: company,
+              mode: 'insensitive',
+            },
+          },
+        ],
+      };
+    }
 
         const data = await this.prismaService.quotesCSV.findMany(query);
 

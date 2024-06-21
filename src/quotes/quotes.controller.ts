@@ -37,12 +37,12 @@ import { PublicGuard } from 'src/auth/public/public.guard';
 import { FindAllParamsDto } from './dto/find-all.dto';
 
 @ApiTags('quotes')
+@UseGuards(AuthGuard)
 @Controller('quotes')
 export class QuotesController {
   constructor(private readonly quotesService: QuotesService) {}
 
   @applyDecorators(...postQuotes())
-  @UseGuards(AuthGuard)
   @Post()
   create(@Req() req: Request, @Body() createQuotesDto: CreateQuotesDto) {
     console.log('-- Controller: create--');
@@ -51,7 +51,6 @@ export class QuotesController {
   }
 
   @applyDecorators(...postQuotesMultiple())
-  @UseGuards(AuthGuard)
   @Post('multiple')
   createMultiple(
     @Req() req: Request,
@@ -62,7 +61,6 @@ export class QuotesController {
   }
 
   @applyDecorators(...notImplemented())
-  @UseGuards(AuthGuard)
   @Post('consulta_massa')
   async consultaMassa(
     @Req() req: Request,
@@ -73,7 +71,6 @@ export class QuotesController {
   }
 
   @applyDecorators(...notImplemented())
-  @UseGuards(AuthGuard)
   @Post('csv/:name')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
@@ -86,7 +83,6 @@ export class QuotesController {
   }
 
   @applyDecorators(...notImplemented())
-  @UseGuards(AuthGuard)
   @Post('csv_weweb')
   @UseInterceptors(FileInterceptor('file'))
   async uploadFileFromWeweb(
@@ -105,13 +101,16 @@ export class QuotesController {
   }
 
   @Get('exportTest/:filter?')
-  exportTest(@Res() res: Response, @Param('filter') filter?: string) {
+  exportTest(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Param('filter') filter?: string,
+  ) {
     console.log('-- Controller: exportTest--');
-    return this.quotesService.exportTest(res, filter);
+    return this.quotesService.exportTest(req, res, filter);
   }
 
   @applyDecorators(...getQuoteUnique())
-  @UseGuards(AuthGuard)
   @Get('id/:id')
   findOne(@Param('id') id: string) {
     console.log('-- Controller: findOne--');
@@ -119,7 +118,6 @@ export class QuotesController {
   }
 
   @applyDecorators(...getDocumentation())
-  @UseGuards(AuthGuard)
   @Get(':take/:skip/:filter?')
   findAllInTableAndCompany(
     @Req() req: Request,
@@ -143,7 +141,6 @@ export class QuotesController {
   }
 
   @applyDecorators(...patchQuotes())
-  @UseGuards(AuthGuard)
   @Patch('id/:id')
   update(@Param('id') id: string, @Body() updateQuotesDto: UpdateQuotesDto) {
     console.log('-- Controller: update--');
@@ -151,7 +148,6 @@ export class QuotesController {
   }
 
   @applyDecorators(...deleteQuote())
-  @UseGuards(AuthGuard)
   @Delete('id/:id')
   remove(@Param('id') id: string) {
     console.log('-- Controller: remove--');
