@@ -6,7 +6,11 @@ import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors();
+  app.enableCors({
+    origin: '*', // Substitua com o(s) domínio(s) permitido(s)
+    allowedHeaders: 'Content-Type, Authorization',
+    exposedHeaders: ['Content-Disposition', 'X-Total-Count'],
+  });
   app.useGlobalPipes(new ValidationPipe());
 
   const config = new DocumentBuilder()

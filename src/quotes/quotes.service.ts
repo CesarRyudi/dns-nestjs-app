@@ -701,6 +701,121 @@ export class QuotesService {
     }
   }
 
+  async exportTest(res, filter: string, pageSize: number = 100) {
+    console.log('-- exportTest --');
+    let skip = 0;
+    let hasNextPage = true;
+
+    const countQueryArgs: Prisma.QuotesCSVCountArgs = {
+      where: {},
+    };
+
+    if (filter) {
+      countQueryArgs.where = {
+        AND: [
+          {
+            OR: [
+              {
+                NOME: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                Customer: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                PN: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+              {
+                DESC: {
+                  contains: filter,
+                  mode: 'insensitive',
+                },
+              },
+            ],
+          },
+        ],
+      };
+    }
+
+    const totalCount = await this.prismaService.quotesCSV.count(countQueryArgs);
+
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=data.csv');
+    res.setHeader('X-Total-Count', totalCount.toString());
+
+    const csvStream = fastcsv.format({ headers: true });
+    csvStream.pipe(res);
+
+    try {
+      while (hasNextPage) {
+        const query: Prisma.QuotesCSVFindManyArgs = {
+          where: {},
+          take: pageSize,
+          skip: skip,
+        };
+
+        if (filter) {
+          query.where = {
+            AND: [
+              {
+                OR: [
+                  {
+                    NOME: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    Customer: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    PN: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                  {
+                    DESC: {
+                      contains: filter,
+                      mode: 'insensitive',
+                    },
+                  },
+                ],
+              },
+            ],
+          };
+        }
+
+        const data = await this.prismaService.quotesCSV.findMany(query);
+
+        if (data.length === 0) {
+          hasNextPage = false;
+        } else {
+          data.forEach((row) => csvStream.write(row));
+          skip += pageSize;
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao exportar dados como CSV', error);
+      if (!res.headersSent) {
+        res.status(500).send('Erro ao exportar dados como CSV');
+      }
+    } finally {
+      csvStream.end();
+    }
+  }
+
   async findOne(id: number) {
     console.log('-- findOne --');
     return await this.prismaService.quotesCSV.findUnique({

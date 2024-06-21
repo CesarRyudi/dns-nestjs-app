@@ -99,12 +99,15 @@ export class QuotesController {
 
   @applyDecorators(...getExport())
   @Get('export/:filter?')
-  export(
-    @Res() res: Response,
-    @Param('filter') filter?: string,
-  ) {
+  export(@Res() res: Response, @Param('filter') filter?: string) {
     console.log('-- Controller: export--');
     return this.quotesService.exportNewATab(res, filter);
+  }
+
+  @Get('exportTest/:filter?')
+  exportTest(@Res() res: Response, @Param('filter') filter?: string) {
+    console.log('-- Controller: exportTest--');
+    return this.quotesService.exportTest(res, filter);
   }
 
   @applyDecorators(...getQuoteUnique())
