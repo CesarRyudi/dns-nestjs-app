@@ -65,3 +65,24 @@ model QuotesCSV {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
+model Log {
+  id        Int      @id @default(autoincrement())
+  level     String
+  message   String
+  context   String
+  timestamp DateTime @default(now())
+
+  error LogError[]
+}
+
+model LogError {
+  id         Int    @id @default(autoincrement())
+  log_id     Int
+  path       String
+  method     String
+  statusCode String
+  stack      String
+
+  
+  log Log @relation(fields: [log_id], references: [id])
+}

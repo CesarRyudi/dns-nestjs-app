@@ -21,6 +21,7 @@
     "dev": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && set PORT=3001 && nest start --watch",
     "studio": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && npx prisma studio",
     "db": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && node src/scripts/csv-to-db.js",
+    "db-migrate": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && npx prisma migrate dev",
     "db-cl": "set DATABASE_URL=postgresql://dns:dns-quotes@localhost:5432/quotes && node src/scripts/cl-db.js"
   },
   "dependencies": {
@@ -38,6 +39,7 @@
     "class-validator": "^0.14.1",
     "csv-parse": "^5.5.5",
     "csv-parser": "^3.0.0",
+    "dotenv": "^16.4.5",
     "express-jwt": "^8.4.1",
     "fast-csv": "^5.0.1",
     "jsonwebtoken": "^9.0.2",
@@ -45,6 +47,7 @@
     "multer": "^1.4.5-lts.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
+    "stacktrace-js": "^2.0.2",
     "swagger-ui-express": "^5.0.0"
   },
   "devDependencies": {
@@ -54,6 +57,7 @@
     "@types/express": "^4.17.21",
     "@types/jest": "^29.5.2",
     "@types/node": "^20.3.1",
+    "@types/stacktrace-js": "^2.0.3",
     "@types/supertest": "^6.0.0",
     "@typescript-eslint/eslint-plugin": "^6.0.0",
     "@typescript-eslint/parser": "^6.0.0",
