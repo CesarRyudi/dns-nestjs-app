@@ -21,9 +21,9 @@ export class UsersController {
 
   @applyDecorators(...getUsers())
   @Get()
-  findAll(@Req() req: Request) {
+  findAll(@Req() req: Request) {    
     return this.usersService.findAll(req);
-  }
+  } 
 
   @applyDecorators(...deleteUser())
   @Delete(':id')

@@ -17,13 +17,11 @@ export class UsersService {
   ) {}
 
   async getBigToken(httpService) {
-    // Busca um token com permissão pra tudo, inclusive criar novos usuários.
     const url = 'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/oauth/token';
     const body = {
-      client_id: 'uHraTep2FAn3VrBqND4CdPtWUKrLliym',
-      client_secret:
-        'BxsHxicFH1by0aYa22F5cGDOFRTyp_kL3qi15dq5CnusGL1Qom-AqrhA4eqIx4kk',
-      audience: 'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/',
+      client_id: process.env.CLIENTE_ID,
+      client_secret: process.env.CLIENTE_SECRET,
+      audience: process.env.AUDIENCE,
       grant_type: 'client_credentials',
     };
 
@@ -40,21 +38,21 @@ export class UsersService {
     const token = req.headers.authorization?.split(' ')[1];
 
     if (token) {
-      const decodedToken = this.jwtService.decode(token); // Decodifica o token JWT
+      const decodedToken = this.jwtService.decode(token);
       const permissions: string[] = decodedToken.permissions;
       const companyFull = permissions.filter((perm) =>
         perm.startsWith('company:'),
       )[0];
       const company = companyFull ? companyFull.split(':')[1] : '';
 
-      if(company.length < 1) return 'erro';
+      if (company.length < 1) return 'erro';
       else if (company == 'master') return '';
       else return company;
     }
   }
 
   async create(req: Express.Request, createUserDto: CreateUserDto) {
-    const bigToken = await this.getBigToken(this.httpService); // Recebe o token master e armazena no bigToken
+    const bigToken = await this.getBigToken(this.httpService); 
     const company = await this.checkCompany(req);
 
     const url = 'https://dev-wo5tgznd7ke4vn0q.us.auth0.com/api/v2/users';
@@ -66,7 +64,7 @@ export class UsersService {
       email_verified: false,
       app_metadata: {},
       picture:
-        'https://static.wixstatic.com/media/72be19_cac738f7d52045249ad7b37b358a856b~mv2.png/v1/fill/w_28,h_28,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Logo%202_0.png', // Foto padrão pra criação de usuários.
+        'https://static.wixstatic.com/media/72be19_cac738f7d52045249ad7b37b358a856b~mv2.png/v1/fill/w_28,h_28,al_c,q_85,usm_0.66_1.00_0.01,enc_auto/Logo%202_0.png', 
       connection: 'DNS-Invite-only-test',
       password: 'Padrao123.',
       verify_email: false,
@@ -129,13 +127,15 @@ export class UsersService {
   }
 
   async findAll(req: Express.Request) {
-    const bigToken = await this.getBigToken(this.httpService); // Recebe o token master e armazena no bigToken
+    
+    const bigToken = await this.getBigToken(this.httpService);
     const headers = {
       Authorization: 'Bearer ' + bigToken,
       'Content-Type': 'application/json',
     };
 
     const company = await this.checkCompany(req);
+
 
     try {
       const url =
@@ -149,8 +149,8 @@ export class UsersService {
           item.user_metadata.company.toLowerCase() === company.toLowerCase(),
       );
 
-      const isMaster = company == ''
-      
+      const isMaster = company == '';
+
       return {
         msg: 'Lista de usuários da sua empresa:',
         data: isMaster ? response.data : filteredData,
@@ -161,7 +161,7 @@ export class UsersService {
   }
 
   async remove(id: string) {
-    const bigToken = await this.getBigToken(this.httpService); // Recebe o token master e armazena no bigToken
+    const bigToken = await this.getBigToken(this.httpService); 
     const headers = {
       Authorization: 'Bearer ' + bigToken,
       'Content-Type': 'application/json',
